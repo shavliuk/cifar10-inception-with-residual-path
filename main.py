@@ -69,8 +69,6 @@ def data_augmentation(X_train, Y_train, n):
 
 
 X_train, Y_train = data_augmentation(X_train, Y_train, 6250)
-'''
-'''
 
 
 X_train= X_train.astype('float32') / 255
