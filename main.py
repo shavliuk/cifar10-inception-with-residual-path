@@ -8,8 +8,9 @@ from tensorflow.keras.utils import to_categorical
 import imgaug.augmenters as iaa
 import random
 
+
 epochs = 50
-batch_size = 128
+batch_size = 192
 kernel_size = (3,3)
 seed = 32
 
@@ -21,10 +22,10 @@ Y_train = to_categorical(Y_train)
 Y_test = to_categorical(Y_test)
 
 
-
-
 def data_augmentation(X_train, Y_train, n):
      data_sample = random.sample(list(zip(X_train, Y_train)), n)
+
+     i = 0
 
      X_train_augmented = X_train.copy()
      Y_train_augmented = Y_train.copy()
@@ -39,6 +40,9 @@ def data_augmentation(X_train, Y_train, n):
      scale_im = iaa.Affine(scale={"x": (1.5, 1.0), "y": (1.5, 1.0)})
 
      for image, label in data_sample:
+         i = i + 1
+         if i % 100 == 0:
+             print(i)
          label = label.reshape((1, 10))
 
          rotated_image = rotate.augment_image(image)
@@ -52,7 +56,6 @@ def data_augmentation(X_train, Y_train, n):
 
          aug_images = np.concatenate([rotated_image, noise_image, crop_image, shear_image,
                                       contrast_image, scale_image, flip_hr_image, flip_vr_image], axis=0)
-         #aug_images = np.reshape(aug_images, shape=(-1, 32, 32, 3))
 
          aug_images = aug_images.reshape((-1, 32, 32, 3))
          aug_shape = aug_images.shape[0]
@@ -66,6 +69,8 @@ def data_augmentation(X_train, Y_train, n):
 
 
 X_train, Y_train = data_augmentation(X_train, Y_train, 6250)
+'''
+'''
 
 
 X_train= X_train.astype('float32') / 255
@@ -110,7 +115,10 @@ def InceptionResNetModule(input, n_filters, kernel_size):
 
 
 
-y = InceptionResNetModule(inputs, 32, kernel_size)
+
+y = Conv2D(filters=32, kernel_size=(1,1),
+               kernel_initializer=tf.keras.initializers.he_uniform(seed=seed))(inputs)
+y = InceptionResNetModule(y, 32, kernel_size)
 y = InceptionResNetModule(y, 64, kernel_size)
 y = InceptionResNetModule(y, 128, kernel_size)
 y = Flatten()(y)
@@ -129,6 +137,38 @@ model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accur
 
 model.fit(X_train, Y_train, epochs=epochs, batch_size=batch_size)
 loss, acc = model.evaluate(X_test, Y_test, batch_size=batch_size)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
